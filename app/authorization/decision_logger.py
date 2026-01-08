@@ -52,10 +52,22 @@ class DecisionStatistics:
 
 
 class DecisionLogger:
-    """Logger for authorization decisions."""
+    """Logger for authorization decisions (Singleton pattern)."""
+    
+    _instance = None
+    _initialized = False
+
+    def __new__(cls):
+        """Ensure only one instance exists (Singleton pattern)."""
+        if cls._instance is None:
+            cls._instance = super(DecisionLogger, cls).__new__(cls)
+        return cls._instance
 
     def __init__(self):
-        self.decisions: List[AuthorizationDecision] = []
+        """Initialize logger only once."""
+        if not DecisionLogger._initialized:
+            self.decisions: List[AuthorizationDecision] = []
+            DecisionLogger._initialized = True
 
     def log(self, decision: AuthorizationDecision):
         """Log an authorization decision."""

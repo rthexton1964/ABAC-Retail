@@ -7,11 +7,23 @@ from app.models.account import Account
 
 
 class DataStore:
-    """In-memory storage for users and accounts."""
+    """In-memory storage for users and accounts (Singleton pattern)."""
+    
+    _instance = None
+    _initialized = False
+
+    def __new__(cls):
+        """Ensure only one instance exists (Singleton pattern)."""
+        if cls._instance is None:
+            cls._instance = super(DataStore, cls).__new__(cls)
+        return cls._instance
 
     def __init__(self):
-        self.users: Dict[str, User] = {}
-        self.accounts: Dict[str, Account] = {}
+        """Initialize storage only once."""
+        if not DataStore._initialized:
+            self.users: Dict[str, User] = {}
+            self.accounts: Dict[str, Account] = {}
+            DataStore._initialized = True
 
     def create_user(self, user: User) -> User:
         """Create a new user with unique ID."""

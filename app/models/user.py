@@ -1,4 +1,4 @@
-"""User model with ABAC attributes."""
+"""User model for Retail-ABAC."""
 
 from typing import Dict, Any
 from dataclasses import dataclass, asdict
@@ -6,10 +6,10 @@ from dataclasses import dataclass, asdict
 
 @dataclass
 class Location:
-    """User location attributes."""
-    branch: str
+    """User location."""
+    primary: str
+    secondary: str
     region: str
-    country: str
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -17,30 +17,27 @@ class Location:
 
 @dataclass
 class UserAttributes:
-    """User attributes for ABAC authorization."""
-    department: str
-    seniority: str
+    """User attributes for Retail-ABAC."""
+    role: str
+    level: str
     location: Location
     clearance_level: int
 
-    VALID_DEPARTMENTS = {'teller', 'loan_officer', 'branch_manager', 'auditor', 'customer_service', 'customer'}
-    VALID_SENIORITY = {'junior', 'mid', 'senior', 'executive'}
+    VALID_ROLES = {"cashier", "manager", "inventory_clerk", "regional_manager"}
+    VALID_LEVELS = {"junior", "mid", "senior", "executive"}
 
     def __post_init__(self):
-        """Validate attribute values."""
-        if self.department not in self.VALID_DEPARTMENTS:
-            raise ValueError(f"Invalid department: {self.department}. Must be one of {self.VALID_DEPARTMENTS}")
-        
-        if self.seniority not in self.VALID_SENIORITY:
-            raise ValueError(f"Invalid seniority: {self.seniority}. Must be one of {self.VALID_SENIORITY}")
-        
+        if self.role not in self.VALID_ROLES:
+            raise ValueError(f"Invalid role: {self.role}")
+        if self.level not in self.VALID_LEVELS:
+            raise ValueError(f"Invalid level: {self.level}")
         if not isinstance(self.clearance_level, int) or not (1 <= self.clearance_level <= 5):
-            raise ValueError(f"Invalid clearance_level: {self.clearance_level}. Must be an integer between 1 and 5")
+            raise ValueError(f"Invalid clearance_level: {self.clearance_level}")
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'department': self.department,
-            'seniority': self.seniority,
+            'role': self.role,
+            'level': self.level,
             'location': self.location.to_dict(),
             'clearance_level': self.clearance_level
         }
@@ -48,7 +45,7 @@ class UserAttributes:
 
 @dataclass
 class User:
-    """User model with ABAC attributes."""
+    """User model."""
     id: str
     name: str
     attributes: UserAttributes
@@ -62,16 +59,11 @@ class User:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'User':
-        """Create User from dictionary."""
         location = Location(**data['attributes']['location'])
         attributes = UserAttributes(
-            department=data['attributes']['department'],
-            seniority=data['attributes']['seniority'],
+            role=data['attributes']['role'],
+            level=data['attributes']['level'],
             location=location,
             clearance_level=data['attributes']['clearance_level']
         )
-        return cls(
-            id=data['id'],
-            name=data['name'],
-            attributes=attributes
-        )
+        return cls(id=data['id'], name=data['name'], attributes=attributes)

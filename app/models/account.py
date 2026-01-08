@@ -1,47 +1,42 @@
-"""Account model with ABAC attributes."""
+"""Resource model for Retail-ABAC."""
 
 from typing import Dict, Any
 from dataclasses import dataclass
 
 
 @dataclass
-class AccountAttributes:
-    """Account attributes for ABAC authorization."""
-    type: str
-    balance: float
-    owner: str  # user id
-    branch: str
+class TransactionAttributes:
+    """Transaction attributes."""
+    resource_type: str
+    owner_id: str
     status: str
+    sensitivity_level: int
+    location: str
 
-    VALID_TYPES = {'checking', 'savings', 'loan', 'investment', 'business'}
-    VALID_STATUSES = {'active', 'frozen', 'under_review', 'closed'}
+    VALID_TYPES = {"type_a", "type_b", "type_c"}
+    VALID_STATUSES = {"active", "inactive", "pending", "archived"}
 
     def __post_init__(self):
-        """Validate attribute values."""
-        if self.type not in self.VALID_TYPES:
-            raise ValueError(f"Invalid account type: {self.type}. Must be one of {self.VALID_TYPES}")
-        
+        if self.resource_type not in self.VALID_TYPES:
+            raise ValueError(f"Invalid resource_type: {self.resource_type}")
         if self.status not in self.VALID_STATUSES:
-            raise ValueError(f"Invalid status: {self.status}. Must be one of {self.VALID_STATUSES}")
-        
-        if not isinstance(self.balance, (int, float)):
-            raise ValueError(f"Invalid balance: {self.balance}. Must be a number")
+            raise ValueError(f"Invalid status: {self.status}")
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'type': self.type,
-            'balance': self.balance,
-            'owner': self.owner,
-            'branch': self.branch,
-            'status': self.status
+            'resource_type': self.resource_type,
+            'owner_id': self.owner_id,
+            'status': self.status,
+            'sensitivity_level': self.sensitivity_level,
+            'location': self.location
         }
 
 
 @dataclass
-class Account:
-    """Account model with ABAC attributes."""
+class Transaction:
+    """Transaction resource."""
     id: str
-    attributes: AccountAttributes
+    attributes: TransactionAttributes
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -50,10 +45,6 @@ class Account:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Account':
-        """Create Account from dictionary."""
-        attributes = AccountAttributes(**data['attributes'])
-        return cls(
-            id=data['id'],
-            attributes=attributes
-        )
+    def from_dict(cls, data: Dict[str, Any]) -> 'Transaction':
+        attributes = TransactionAttributes(**data['attributes'])
+        return cls(id=data['id'], attributes=attributes)
